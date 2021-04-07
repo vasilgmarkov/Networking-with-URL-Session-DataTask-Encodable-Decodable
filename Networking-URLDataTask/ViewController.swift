@@ -12,24 +12,21 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        sendPost()
+        createPost()
         
     }
     
-    func sendPost() {
+    func createPost() {
         guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts") else {
             fatalError("Could not be a url")
         }
         
-        let params = [
-            "title": "I am the king!",
-            "body": "The king is back. Get over it faaaam"
-        ]
+        let newPost = Post(id: 101, title: "Encodable Title", body: "This data was created using the encodable format")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
+        request.httpBody = try? JSONEncoder().encode(newPost)
         
         let session = URLSession.shared.dataTask(with: request) {
             data, response, error in
@@ -37,9 +34,10 @@ class ViewController: UIViewController {
             if let error = error {
                 print("There was an error \(error.localizedDescription)")
             } else {
-                let jsonRes = try? JSONSerialization.jsonObject(with: data!, options: [])
+                let post = try? JSONDecoder().decode(Post.self, from: data!)
                 
-                print("The response: \(jsonRes)")
+                print("The title is: \(post?.title)")
+                print("The body is: \(post?.body)")
             }
             
         }.resume()
